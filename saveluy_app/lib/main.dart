@@ -26,7 +26,7 @@ class SaveLuyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      // Starting with the Setup/Settings screen to test Category creation 
+      // Starting with the Setup/Settings screen to test Category creation
       home: const SettingsScreen(),
     );
   }
