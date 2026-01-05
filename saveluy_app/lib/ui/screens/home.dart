@@ -15,13 +15,23 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'Habit Hero',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/Logo.png',
+              height: 60,
+              fit: BoxFit.contain,
+            ),
+            const Text(
+              'SaveLuy',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
+              ),
+            ),
+          ],
         ),
       ),
       body: SingleChildScrollView(
@@ -29,12 +39,8 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Streak Card
-            _buildStreakCard(),
-            const SizedBox(height: 16),
-
-            // Improvement Score Card
-            _buildImprovementScoreCard(),
+            // Overall Score Card
+            _buildOverAllCard(),
             const SizedBox(height: 16),
 
             // Category Activity Card
@@ -56,72 +62,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStreakCard() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        height: 200,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/streak.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(0.05),
-                Colors.black.withOpacity(0.1),
-              ],
-            ),
-          ),
-          child: const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '7 Days',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    '7 days without unnecessary spending!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Keep the fire going! Every day counts towards your goals.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImprovementScoreCard() {
+  Widget _buildOverAllCard() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -139,7 +80,7 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Improvement Score',
+            'Overall Score',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -218,158 +159,140 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildCategoryActivityCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            'Category Activity',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildCategoryCard(
+          imagePath: 'assets/images/categories/foodNdrink.png',
+          iconColor: const Color(0xFFF44336),
+          label: 'Food & Drink',
+          status: 'High Activity',
+          statusColor: const Color(0xFFF44336),
+          filledDots: 4,
+          progress: 0.9,
+          accentColor: const Color(0xFFE53935),
+        ),
+        const SizedBox(height: 12),
+        _buildCategoryCard(
+          imagePath: 'assets/images/categories/A_piggy_bank.png',
+          iconColor: _primary,
+          label: 'Daily Savings',
+          status: 'High Activity',
+          statusColor: _primary,
+          filledDots: 5,
+          progress: 1,
+          accentColor: _primary,
+        ),
+        const SizedBox(height: 12),
+        _buildCategoryCard(
+          imagePath: 'assets/images/onlineShopping.png',
+          iconColor: const Color(0xFFFFB300),
+          label: 'Impulse Buying',
+          status: 'Controlled',
+          statusColor: const Color(0xFFFFB300),
+          filledDots: 2,
+          progress: 0.35,
+          accentColor: const Color(0xFFFFB300),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryCard({
+    required String imagePath,
+    required Color iconColor,
+    required String label,
+    required String status,
+    required Color statusColor,
+    required int filledDots,
+    required double progress,
+    required Color accentColor,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Category Activity',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    imagePath,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      status,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                children: List.generate(5, (index) => _buildDot(index < filledDots, accentColor)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: Colors.grey.shade200,
+              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
             ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Your spending and savings patterns',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 20),
-          _buildCategoryItem(
-            icon: Icons.restaurant_menu,
-            iconColor: const Color(0xFFF44336),
-            label: 'Food & Drink',
-            status: 'High Activity',
-            statusColor: const Color(0xFFF44336),
-            activityIcons: [],
-            showCircles: true,
-          ),
-          const SizedBox(height: 16),
-          _buildCategoryItem(
-            icon: Icons.savings_outlined,
-            iconColor: _primary,
-            label: 'Daily Savings',
-            status: 'High Activity',
-            statusColor: _primary,
-            activityIcons: [],
-            showCircles: true,
-          ),
-          const SizedBox(height: 16),
-          _buildCategoryItem(
-            icon: Icons.shopping_cart_outlined,
-            iconColor: const Color(0xFFFFB300),
-            label: 'Impulse Buying',
-            status: 'Controlled',
-            statusColor: const Color(0xFFFFB300),
-            activityIcons: [],
-            showCircles: true,
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCategoryItem({
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required String status,
-    required Color statusColor,
-    List<IconData> activityIcons = const [],
-    bool showCircles = false,
-  }) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              // Activity indicators
-              if (showCircles)
-                Row(
-                  children: List.generate(
-                    7,
-                    (index) => Container(
-                      margin: EdgeInsets.only(right: index < 6 ? 3 : 0),
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: index < 3
-                            ? iconColor.withOpacity(0.2)
-                            : Colors.grey.withOpacity(0.2),
-                        border: Border.all(
-                          color: index < 3 ? iconColor : Colors.grey,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              else
-                Row(
-                  children: activityIcons
-                      .map(
-                        (activityIcon) => Container(
-                          margin: const EdgeInsets.only(right: 4),
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: iconColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Icon(
-                            activityIcon,
-                            size: 16,
-                            color: iconColor,
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-            ],
-          ),
-        ),
-        Text(
-          status,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: statusColor,
-          ),
-        ),
-      ],
     );
   }
 
@@ -478,4 +401,31 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildDot(bool isActive, Color color) {
+    return Container(
+      width: 16,
+      height: 16,
+      margin: const EdgeInsets.only(left: 4),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isActive ? color.withOpacity(0.16) : Colors.grey.shade200,
+        border: Border.all(
+          color: isActive ? color : Colors.grey.shade300,
+          width: 1.2,
+        ),
+      ),
+      child: isActive
+          ? Center(
+              child: Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            )
+          : null,
+    );
+  }
 }

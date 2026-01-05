@@ -104,45 +104,45 @@ class AnalysisScreen extends StatelessWidget {
 
 	static const List<_StreakItem> _streaks = [
 		_StreakItem(
-			icon: Icons.local_cafe_outlined,
-			iconColor: Color(0xFF20C997),
-			title: 'Coffee Avoided',
+			imagePath: 'assets/images/coffee.png',
+			title: 'Coffee Purchased Avoided',
 			subtitle: 'No Coffee Today',
 			streakCount: 3,
+			category: 'Food & Drink',
 		),
 		_StreakItem(
-			icon: Icons.savings_outlined,
-			iconColor: Color(0xFF20C997),
+			imagePath: 'assets/images/homeCookMeal.png',
+			title: 'Home Cooked Meal',
+			subtitle: 'Avoided Dining Out',
+			streakCount: 4,
+			category: 'Food & Drink',
+		),
+		_StreakItem(
+			imagePath: 'assets/images/pigBank.png',
 			title: 'Daily Savings Log',
 			subtitle: 'Saved RM5 Today',
 			streakCount: 5,
+			category: 'Daily Savings',
 		),
 		_StreakItem(
-			icon: Icons.local_mall_outlined,
-			iconColor: Color(0xFF20C997),
-			title: 'Impulse Buy Avoided',
+			imagePath: 'assets/images/onlineShopping.png',
+			title: 'Online Shopping Avoided',
 			subtitle: 'Avoided Impulse Buy',
 			streakCount: 7,
+			category: 'Impulse Buying',
 		),
 		_StreakItem(
-			icon: Icons.phone_android,
-			iconColor: Color(0xFF20C997),
-			title: 'Reduced Screen Time',
-			subtitle: 'Screen Time Managed',
-			streakCount: 1,
-		),
-		_StreakItem(
-			icon: Icons.local_drink,
-			iconColor: Color(0xFF20C997),
-			title: 'Drank Water',
-			subtitle: 'Hydration Goal Hit',
+			imagePath: 'assets/images/snacks.png',
+			title: 'Avoided Buying Snacks',
+			subtitle: 'Saved on Junk Food',
 			streakCount: 2,
+			category: 'Food & Drink',
 		),
 	];
 
 	static const List<_CategoryItem> _categories = [
 		_CategoryItem(
-			icon: Icons.restaurant_menu,
+			imagePath: 'assets/images/categories/foodNdrink.png',
 			iconColor: Color(0xFFF44336),
 			label: 'Food & Drink',
 			status: 'High Activity',
@@ -152,17 +152,17 @@ class AnalysisScreen extends StatelessWidget {
 			accentColor: Color(0xFFE53935),
 		),
 		_CategoryItem(
-			icon: Icons.savings_outlined,
+			imagePath: 'assets/images/categories/A_piggy_bank.png',
 			iconColor: Color(0xFF20C997),
 			label: 'Daily Savings',
 			status: 'High Activity',
 			statusColor: Color(0xFF20C997),
-			filledDots: 6,
-			progress: 0.95,
+			filledDots: 5,
+			progress: 1,
 			accentColor: Color(0xFF20C997),
 		),
 		_CategoryItem(
-			icon: Icons.shopping_cart_outlined,
+			imagePath: 'assets/images/onlineShopping.png',
 			iconColor: Color(0xFFFFB300),
 			label: 'Impulse Buying',
 			status: 'Controlled',
@@ -175,23 +175,23 @@ class AnalysisScreen extends StatelessWidget {
 }
 
 class _StreakItem {
-	final IconData icon;
-	final Color iconColor;
+	final String imagePath;
 	final String title;
 	final String subtitle;
 	final int streakCount;
+	final String category;
 
 	const _StreakItem({
-		required this.icon,
-		required this.iconColor,
+		required this.imagePath,
 		required this.title,
 		required this.subtitle,
 		required this.streakCount,
+		required this.category,
 	});
 }
 
 class _CategoryItem {
-	final IconData icon;
+	final String imagePath;
 	final Color iconColor;
 	final String label;
 	final String status;
@@ -201,7 +201,7 @@ class _CategoryItem {
 	final Color accentColor;
 
 	const _CategoryItem({
-		required this.icon,
+		required this.imagePath,
 		required this.iconColor,
 		required this.label,
 		required this.status,
@@ -242,10 +242,16 @@ class _StreakTile extends StatelessWidget {
 						width: 48,
 						height: 48,
 						decoration: BoxDecoration(
-							color: item.iconColor.withOpacity(0.12),
+							color: const Color(0xFF20C997).withOpacity(0.12),
 							borderRadius: BorderRadius.circular(12),
 						),
-						child: Icon(item.icon, color: item.iconColor, size: 26),
+						child: ClipRRect(
+							borderRadius: BorderRadius.circular(12),
+							child: Image.asset(
+								item.imagePath,
+								fit: BoxFit.cover,
+							),
+						),
 					),
 					const SizedBox(width: 14),
 					Expanded(
@@ -253,12 +259,32 @@ class _StreakTile extends StatelessWidget {
 							crossAxisAlignment: CrossAxisAlignment.start,
 							mainAxisAlignment: MainAxisAlignment.center,
 							children: [
-								Text(
-									item.title,
-									style: const TextStyle(
-										fontSize: 16,
-										fontWeight: FontWeight.w600,
-									),
+								Row(
+									children: [
+										Text(
+											item.title,
+											style: const TextStyle(
+												fontSize: 16,
+												fontWeight: FontWeight.w600,
+											),
+										),
+										const SizedBox(width: 8),
+										Container(
+											padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+											decoration: BoxDecoration(
+												color: Colors.grey.shade100,
+												borderRadius: BorderRadius.circular(4),
+											),
+											child: Text(
+												item.category,
+												style: TextStyle(
+													fontSize: 10,
+													fontWeight: FontWeight.w500,
+													color: Colors.grey.shade600,
+												),
+											),
+										),
+									],
 								),
 								const SizedBox(height: 4),
 								Text(
@@ -335,7 +361,13 @@ class _CategoryCard extends StatelessWidget {
 									color: item.iconColor.withOpacity(0.12),
 									borderRadius: BorderRadius.circular(12),
 								),
-								child: Icon(item.icon, color: item.iconColor, size: 24),
+								child: ClipRRect(
+									borderRadius: BorderRadius.circular(12),
+									child: Image.asset(
+										item.imagePath,
+										fit: BoxFit.cover,
+									),
+								),
 							),
 							const SizedBox(width: 12),
 							Expanded(
