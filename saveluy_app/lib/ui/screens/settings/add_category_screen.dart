@@ -5,16 +5,23 @@ class AddCategoryScreen extends StatefulWidget {
   const AddCategoryScreen({super.key});
 
   @override
-  State<AddCategoryScreen> createState() => _EditCategoryScreenState();
+  State<AddCategoryScreen> createState() => _AddCategoryScreenState();
 }
 
-class _EditCategoryScreenState extends State<AddCategoryScreen> {
+class _AddCategoryScreenState extends State<AddCategoryScreen> {
   // Controllers for text fields 
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
   
   // Default selection for the CategoryType enum
   CategoryType _selectedType = CategoryType.saving;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
 
   void _onSave() {
     final name = _nameController.text.trim();

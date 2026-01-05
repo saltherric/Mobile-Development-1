@@ -1,0 +1,14 @@
+[
+  {
+    "id": "c1a9f2b0-1c34-4f2a-9e21-111111111111",
+    "name": "Daily Saving",
+    "description": "Small daily savings such as coins or leftover cash",
+    "type": "saving"
+  },
+  {
+    "id": "a7b3c8d9-2e45-4b1f-8a12-222222222222",
+    "name": "Invest Learning",
+    "description": "Money used to learn about investments or buy learning materials",
+    "type": "investment"
+  }
+]
