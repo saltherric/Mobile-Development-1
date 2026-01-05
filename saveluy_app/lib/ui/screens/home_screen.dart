@@ -4,22 +4,23 @@ import 'analysis_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+  static const Color _background = Color(0xFFF5F7FA);
+  static const Color _primary = Color(0xFF20C997);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: _background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Center(
-          child: const Text(
-            'Habit Hero',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
+        centerTitle: true,
+        title: const Text(
+          'Habit Hero',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -171,9 +172,7 @@ class HomeScreen extends StatelessWidget {
                         value: 0.85,
                         strokeWidth: 8,
                         backgroundColor: Colors.grey[200],
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4CAF50),
-                        ),
+                        valueColor: const AlwaysStoppedAnimation<Color>(_primary),
                       ),
                     ),
                     const Column(
@@ -184,7 +183,7 @@ class HomeScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF4CAF50),
+                            color: _primary,
                           ),
                         ),
                         Text(
@@ -203,12 +202,12 @@ class HomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
+                  color: _primary.withOpacity(0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.star_outline,
-                  color: Color(0xFF4CAF50),
+                  color: _primary,
                   size: 32,
                 ),
               ),
@@ -253,31 +252,31 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _buildCategoryItem(
-            icon: Icons.restaurant,
-            iconColor: Colors.red,
+            icon: Icons.restaurant_menu,
+            iconColor: const Color(0xFFF44336),
             label: 'Food & Drink',
-            status: 'High',
-            statusColor: Colors.red,
+            status: 'High Activity',
+            statusColor: const Color(0xFFF44336),
             activityIcons: [],
             showCircles: true,
           ),
           const SizedBox(height: 16),
           _buildCategoryItem(
-            icon: Icons.savings,
-            iconColor: Colors.green,
+            icon: Icons.savings_outlined,
+            iconColor: _primary,
             label: 'Daily Savings',
-            status: 'High',
-            statusColor: Colors.red,
+            status: 'High Activity',
+            statusColor: _primary,
             activityIcons: [],
             showCircles: true,
           ),
           const SizedBox(height: 16),
           _buildCategoryItem(
-            icon: Icons.shopping_cart,
-            iconColor: Colors.orange,
+            icon: Icons.shopping_cart_outlined,
+            iconColor: const Color(0xFFFFB300),
             label: 'Impulse Buying',
             status: 'Controlled',
-            statusColor: Colors.green,
+            statusColor: const Color(0xFFFFB300),
             activityIcons: [],
             showCircles: true,
           ),
@@ -394,12 +393,12 @@ class HomeScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F5E9),
+              color: _primary.withOpacity(0.12),
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
               Icons.edit_outlined,
-              color: Color(0xFF4CAF50),
+              color: _primary,
               size: 32,
             ),
           ),
@@ -448,12 +447,12 @@ class HomeScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
+                color: _primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
-                Icons.search,
-                color: Color(0xFF4CAF50),
+                Icons.bar_chart_outlined,
+                color: _primary,
                 size: 32,
               ),
             ),
@@ -486,19 +485,19 @@ class HomeScreen extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
             offset: const Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildNavItem(Icons.home, 'Home', true),
+              _buildNavItem(Icons.home_outlined, 'Home', true),
               _buildNavItem(Icons.add_circle_outline, 'Add', false),
               _buildNavItem(
                 Icons.bar_chart,
@@ -508,7 +507,7 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const AnalysisScreen()),
                 ),
               ),
-              _buildNavItem(Icons.settings, 'Settings', false),
+              _buildNavItem(Icons.settings_outlined, 'Settings', false),
             ],
           ),
         ),
@@ -526,16 +525,16 @@ class HomeScreen extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isActive ? const Color(0xFF4CAF50) : Colors.grey,
-            size: 28,
+            color: isActive ? _primary : Colors.grey,
+            size: 26,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
               fontSize: 12,
-              color: isActive ? const Color(0xFF4CAF50) : Colors.grey,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              color: isActive ? _primary : Colors.grey,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ],
