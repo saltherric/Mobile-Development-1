@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ui/screens/categories/category_screen.dart';
+import 'ui/screens/settings/settings_screen.dart';
 
 void main() {
   runApp(const SaveLuyApp());
