@@ -14,10 +14,12 @@ class AnalysisScreen extends StatelessWidget {
 			appBar: AppBar(
 				backgroundColor: Colors.white,
 				elevation: 0,
-				leading: IconButton(
-					icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-					onPressed: () => Navigator.of(context).maybePop(),
-				),
+				leading: Navigator.canPop(context)
+						? IconButton(
+								icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+								onPressed: () => Navigator.of(context).maybePop(),
+						)
+						: null,
 				centerTitle: true,
 				title: const Text(
 					'Habit Analysis',
@@ -96,10 +98,6 @@ class AnalysisScreen extends StatelessWidget {
 						),
 					],
 				),
-			),
-			bottomNavigationBar: _BottomNav(
-				activeLabel: 'Analysis',
-				onHomeTap: () => Navigator.of(context).maybePop(),
 			),
 		);
 	}
@@ -412,111 +410,3 @@ class _CategoryCard extends StatelessWidget {
 	}
 }
 
-class _BottomNav extends StatelessWidget {
-	const _BottomNav({
-		required this.activeLabel,
-		this.onHomeTap,
-		this.onAddTap,
-		this.onAnalysisTap,
-		this.onSettingsTap,
-	});
-
-	final String activeLabel;
-	final VoidCallback? onHomeTap;
-	final VoidCallback? onAddTap;
-	final VoidCallback? onAnalysisTap;
-	final VoidCallback? onSettingsTap;
-
-	@override
-	Widget build(BuildContext context) {
-		return Container(
-			decoration: BoxDecoration(
-				color: Colors.white,
-				boxShadow: [
-					BoxShadow(
-						color: Colors.black.withOpacity(0.08),
-						blurRadius: 12,
-						offset: const Offset(0, -2),
-					),
-				],
-			),
-			child: SafeArea(
-				top: false,
-				child: Padding(
-					padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-					child: Row(
-						mainAxisAlignment: MainAxisAlignment.spaceBetween,
-						children: [
-							_NavItem(
-								icon: Icons.home_outlined,
-								label: 'Home',
-								isActive: activeLabel == 'Home',
-								onTap: onHomeTap,
-							),
-							_NavItem(
-								icon: Icons.add_circle_outline,
-								label: 'Add',
-								isActive: activeLabel == 'Add',
-								onTap: onAddTap,
-							),
-							_NavItem(
-								icon: Icons.bar_chart,
-								label: 'Analysis',
-								isActive: activeLabel == 'Analysis',
-								onTap: onAnalysisTap,
-							),
-							_NavItem(
-								icon: Icons.settings_outlined,
-								label: 'Settings',
-								isActive: activeLabel == 'Settings',
-								onTap: onSettingsTap,
-							),
-						],
-					),
-				),
-			),
-		);
-	}
-}
-
-class _NavItem extends StatelessWidget {
-	const _NavItem({
-		required this.icon,
-		required this.label,
-		required this.isActive,
-		this.onTap,
-	});
-
-	final IconData icon;
-	final String label;
-	final bool isActive;
-	final VoidCallback? onTap;
-
-	@override
-	Widget build(BuildContext context) {
-		final Color activeColor = AnalysisScreen._primary;
-		return GestureDetector(
-			behavior: HitTestBehavior.opaque,
-			onTap: onTap,
-			child: Column(
-				mainAxisSize: MainAxisSize.min,
-				children: [
-					Icon(
-						icon,
-						color: isActive ? activeColor : Colors.grey,
-						size: 26,
-					),
-					const SizedBox(height: 4),
-					Text(
-						label,
-						style: TextStyle(
-							fontSize: 12,
-							fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-							color: isActive ? activeColor : Colors.grey,
-						),
-					),
-				],
-			),
-		);
-	}
-}

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'analysis_screen.dart';
+import 'analysis.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -49,11 +49,10 @@ class HomeScreen extends StatelessWidget {
                 Expanded(child: _buildHabitAnalysisCard(context)),
               ],
             ),
-            const SizedBox(height: 80), // Space for bottom nav
+            const SizedBox(height: 80), // Space reserved for the shared tab bar
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
@@ -64,7 +63,7 @@ class HomeScreen extends StatelessWidget {
         height: 200,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/streak.png'),
+            image: AssetImage('assets/images/streak.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -479,66 +478,4 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem(Icons.home_outlined, 'Home', true),
-              _buildNavItem(Icons.add_circle_outline, 'Add', false),
-              _buildNavItem(
-                Icons.bar_chart,
-                'Analysis',
-                false,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const AnalysisScreen()),
-                ),
-              ),
-              _buildNavItem(Icons.settings_outlined, 'Settings', false),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive,
-      {VoidCallback? onTap}) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: isActive ? _primary : Colors.grey,
-            size: 26,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isActive ? _primary : Colors.grey,
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

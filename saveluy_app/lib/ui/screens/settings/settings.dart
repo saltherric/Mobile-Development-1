@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../models/category.dart';
 import '../../../data/repositories/category/category_json_repository.dart';
 import '../../widgets/category_card.dart';
-import 'add_category_screen.dart';
+import 'addCategory.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -74,10 +74,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         title: const Text('Setup'),
         elevation: 0,
         backgroundColor: Colors.white,

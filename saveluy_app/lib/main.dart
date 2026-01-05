@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ui/screens/settings/settings_screen.dart';
+import 'ui/screens/appScreens.dart';
 
 void main() {
   runApp(const SaveLuyApp());
@@ -26,8 +26,8 @@ class SaveLuyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      // Starting with the Setup/Settings screen to test Category creation
-      home: const SettingsScreen(),
+      // Root tab scaffold connects Home, Analysis, and Settings
+      home: const AppScreens(),
     );
   }
 }
