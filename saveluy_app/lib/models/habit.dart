@@ -15,6 +15,7 @@ enum CategoryType {
 
   const CategoryType(this.label, this.icon);
 
+  /// Parse enum from its string name.
   static CategoryType fromName(String name) {
     return CategoryType.values.firstWhere(
       (e) => e.name == name,
@@ -48,6 +49,7 @@ enum IconType {
 
   const IconType(this.label, this.iconData);
 
+  /// Parse enum from its string name.
   static IconType fromName(String name) {
     return IconType.values.firstWhere(
       (e) => e.name == name,
@@ -73,7 +75,7 @@ class Habit {
     required this.type,
   }) : id = id ?? uuid.v4();
 
-  /// TO SQLITE
+  /// Serialize to Map for storage.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -85,7 +87,7 @@ class Habit {
     };
   }
 
-  /// FROM SQLITE
+  /// Deserialize from Map read from storage.
   factory Habit.fromMap(Map<String, dynamic> map) {
     return Habit(
       id: map['id'],

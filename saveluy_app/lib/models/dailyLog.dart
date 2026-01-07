@@ -2,12 +2,13 @@ import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
 
+/// Daily log model – records a habit completion on a date.
 class DailyLog {
   final String id;
-  final String habitId;   // Link to the Habit being logged
-  final DateTime date;    // The date/time the habit was performed
+  final String habitId;   // Links to which habit was completed
+  final DateTime date;    // When it was completed
   final String? notes;    // Optional notes
-  final double? amount;   // For financial habits (e.g., "Saved RM5")
+  final double? amount;   // Optional amount (for financial habits like savings)
 
   DailyLog({
     String? id,
@@ -17,24 +18,23 @@ class DailyLog {
     this.amount,
   }) : id = id ?? uuid.v4();
 
-  // Convert to Map for SQLite
+  /// Serialize to Map for storage.
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'habitId': habitId,
-      // Store only the date part (YYYY-MM-DD) if you only care about daily logs
-      'date': date.toIso8601String(), 
+      'date': date.toIso8601String(),  // Store as text in ISO format
       'notes': notes,
       'amount': amount,
     };
   }
 
-  // Create from SQLite Map
+  /// Deserialize from Map read from storage.
   factory DailyLog.fromMap(Map<String, dynamic> map) {
     return DailyLog(
       id: map['id'],
       habitId: map['habitId'],
-      date: DateTime.parse(map['date']),
+      date: DateTime.parse(map['date']),  // Convert ISO string back to DateTime
       notes: map['notes'],
       amount: map['amount']?.toDouble(),
     );

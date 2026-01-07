@@ -18,6 +18,7 @@ class _AppScreensState extends State<AppScreens> {
 
   final List<Widget> _pages = const [
     HomeScreen(),
+    LogHabitScreen(),
     AnalysisScreen(),
     SettingsMainScreen(),
   ];
@@ -26,28 +27,20 @@ class _AppScreensState extends State<AppScreens> {
     setState(() => _currentIndex = index);
   }
 
-  Future<void> _onAddTap() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const LogHabitScreen()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
   Widget _buildBottomNavigationBar() {
     final bool isHome = _currentIndex == 0;
-    final bool isAnalysis = _currentIndex == 1;
-    final bool isSettings = _currentIndex == 2;
+    final bool isLog = _currentIndex == 1;
+    final bool isAnalysis = _currentIndex == 2;
+    final bool isSettings = _currentIndex == 3;
 
     return Container(
       decoration: BoxDecoration(
@@ -73,21 +66,21 @@ class _AppScreensState extends State<AppScreens> {
               ),
               _buildNavItem(
                 Icons.add_circle_outline,
-                'Add',
-                false,
-                _onAddTap,
+                'Log',
+                isLog,
+                () => _onTabSelected(1),
               ),
               _buildNavItem(
                 Icons.bar_chart,
                 'Analysis',
                 isAnalysis,
-                () => _onTabSelected(1),
+                () => _onTabSelected(2),
               ),
               _buildNavItem(
                 Icons.settings_outlined,
                 'Settings',
                 isSettings,
-                () => _onTabSelected(2),
+                () => _onTabSelected(3),
               ),
             ],
           ),
@@ -116,11 +109,7 @@ class _AppScreensState extends State<AppScreens> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  icon,
-                  color: isActive ? _primary : Colors.grey,
-                  size: 26,
-                ),
+                Icon(icon, color: isActive ? _primary : Colors.grey, size: 26),
                 const SizedBox(height: 4),
                 Text(
                   label,

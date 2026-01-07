@@ -111,6 +111,74 @@ class DatabaseHelper {
     return allLogs.where((log) => log['habitId'] == habitId).toList();
   }
 
+  /// Get all daily logs (for reporting/analysis)
+  Future<List<Map<String, dynamic>>> getAllDailyLogs() async {
+    return await _loadList('daily_logs');
+  }
+
+  /// Get logs for a specific calendar date (YYYY-MM-DD)
+  Future<List<Map<String, dynamic>>> getDailyLogsForDate(DateTime date) async {
+    final allLogs = await _loadList('daily_logs');
+    final dateString = DateTime(date.year, date.month, date.day)
+        .toIso8601String()
+        .split('T')
+        .first; // YYYY-MM-DD
+
+    return allLogs.where((log) {
+      final logDate = DateTime.parse(log['date']);
+      final logDateString = DateTime(logDate.year, logDate.month, logDate.day)
+          .toIso8601String()
+          .split('T')
+          .first;
+      return logDateString == dateString;
+    }).toList();
+  }
+
+  /// Delete a single daily log by id
+  Future<void> deleteDailyLog(String id) async {
+    final logs = await _loadList('daily_logs');
+    logs.removeWhere((l) => l['id'] == id);
+    await _saveList('daily_logs', logs);
+  }
+
+  // ============ CATEGORIES ============
+
+  Future<void> insertCategory(Map<String, dynamic> category) async {
+    final categories = await getCategoryMapList();
+    final index = categories.indexWhere((c) => c['id'] == category['id']);
+    
+    if (index >= 0) {
+      categories[index] = category;
+    } else {
+      categories.add(category);
+    }
+    
+    await _saveList('categories', categories);
+  }
+
+  Future<List<Map<String, dynamic>>> getCategoryMapList() async {
+    return await _loadList('categories');
+  }
+
+  Future<Map<String, dynamic>?> getCategoryById(String id) async {
+    final categories = await getCategoryMapList();
+    try {
+      return categories.firstWhere((c) => c['id'] == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<void> updateCategory(Map<String, dynamic> category) async {
+    await insertCategory(category);
+  }
+
+  Future<void> deleteCategory(String id) async {
+    final categories = await getCategoryMapList();
+    categories.removeWhere((c) => c['id'] == id);
+    await _saveList('categories', categories);
+  }
+
   // ============ HOME DATA ============
 
   Future<void> insertHomeData(Map<String, dynamic> homeData) async {

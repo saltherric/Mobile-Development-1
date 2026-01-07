@@ -187,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '${homeData.overallScore.toStringAsFixed(0)}',
+                          homeData.overallScore.toStringAsFixed(0),
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,

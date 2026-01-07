@@ -11,6 +11,8 @@ class HabitFormScreen extends StatefulWidget {
 }
 
 class _HabitFormScreenState extends State<HabitFormScreen> {
+  static const Color _primaryGreen = Color(0xFF20C997);
+  static const Color _background = Color(0xFFF5F7FA);
   final _nameController = TextEditingController();
   final _quickLogController = TextEditingController();
 
@@ -19,6 +21,44 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   bool _showInQuickAdd = true;
 
   bool get _isEditing => widget.habit != null;
+
+  List<IconType> _iconsForCategory(CategoryType category) {
+    switch (category) {
+      case CategoryType.saving:
+        return [
+          IconType.piggyBank,
+          IconType.wallet,
+          IconType.cash,
+          IconType.growth,
+          IconType.bank,
+        ];
+      case CategoryType.investment:
+        return [
+          IconType.growth,
+          IconType.bank,
+          IconType.wallet,
+        ];
+      case CategoryType.debt:
+        return [
+          IconType.cutCard,
+          IconType.cash,
+          IconType.bank,
+        ];
+      case CategoryType.avoidance:
+        return [
+          IconType.coffee,
+          IconType.shoppingCart,
+          IconType.noSpending,
+          IconType.block,
+        ];
+      case CategoryType.other:
+        return [
+          IconType.other,
+          IconType.home,
+          IconType.gym,
+        ];
+    }
+  }
 
   @override
   void initState() {
@@ -30,6 +70,11 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
       _selectedIcon = h.icon;
       _selectedCategory = h.type;
       _showInQuickAdd = h.showInQuickAdd;
+    }
+    // Ensure the initially selected icon is valid for the category
+    final choices = _iconsForCategory(_selectedCategory);
+    if (!choices.contains(_selectedIcon)) {
+      _selectedIcon = choices.first;
     }
   }
 
@@ -56,17 +101,22 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: _background,
       appBar: AppBar(
-        leading: const BackButton(),
-        title: Text(_isEditing ? 'Edit Habit' : 'Create Habit'),
+        leading: const BackButton(color: Colors.black),
+        title: Text(_isEditing ? 'Edit Habit' : 'Create Habit',
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            )),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -91,7 +141,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
             _label('Select Icon'),
             _dropdown<IconType>(
               value: _selectedIcon,
-              items: IconType.values,
+              items: _iconsForCategory(_selectedCategory),
               label: (i) => i.label,
               icon: (i) => i.iconData,
               onChanged: (v) => setState(() => _selectedIcon = v),
@@ -105,7 +155,13 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
               items: CategoryType.values,
               label: (c) => c.label,
               icon: (c) => c.icon,
-              onChanged: (v) => setState(() => _selectedCategory = v),
+              onChanged: (v) => setState(() {
+                _selectedCategory = v;
+                final choices = _iconsForCategory(_selectedCategory);
+                if (!choices.contains(_selectedIcon)) {
+                  _selectedIcon = choices.first;
+                }
+              }),
             ),
             _helper('Choose which category this habit belongs to'),
             const SizedBox(height: 20),
@@ -116,7 +172,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
               subtitle:
                   const Text('Display this habit on the Add Record page'),
               value: _showInQuickAdd,
-              activeColor: Colors.blue,
+              activeColor: _primaryGreen,
               onChanged: (v) => setState(() => _showInQuickAdd = v),
             ),
 
@@ -132,16 +188,17 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
 
       /// Bottom Buttons
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
         child: Row(
           children: [
             Expanded(
               child: OutlinedButton(
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: Colors.grey.shade300),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: const Text('Cancel'),
@@ -152,10 +209,11 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
               child: ElevatedButton(
                 onPressed: _onSave,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF81C784),
+                  backgroundColor: _primaryGreen,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: const Text('Save'),
@@ -171,7 +229,10 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
 
   Widget _label(String text) => Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Colors.black,
+        ),
       );
 
   Widget _helper(String text) => Padding(
@@ -188,8 +249,16 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _primaryGreen, width: 2),
         ),
       ),
     );
@@ -203,22 +272,32 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
     required ValueChanged<T> onChanged,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(30),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE0E0E0)),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<T>(
           value: value,
           isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded),
           items: items
               .map(
                 (e) => DropdownMenuItem(
                   value: e,
                   child: Row(
                     children: [
-                      Icon(icon(e)),
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: _primaryGreen.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(icon(e), color: _primaryGreen, size: 18),
+                      ),
                       const SizedBox(width: 12),
                       Text(label(e)),
                     ],
@@ -233,25 +312,46 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   }
 
   Widget _previewCard() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.green.withOpacity(0.1),
-          child: Icon(_selectedIcon.iconData, color: Colors.green),
-        ),
-        title: Text(
-          _nameController.text.isEmpty
-              ? 'Habit Name'
-              : _nameController.text,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          _quickLogController.text.isEmpty
-              ? 'Quick log text'
-              : _quickLogController.text,
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: _primaryGreen.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: _primaryGreen.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(_selectedIcon.iconData, color: _primaryGreen),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _nameController.text.isEmpty ? 'Habit Name' : _nameController.text,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _quickLogController.text.isEmpty ? 'Quick log text' : _quickLogController.text,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

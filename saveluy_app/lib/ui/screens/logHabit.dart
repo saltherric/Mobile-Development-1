@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../data/repositories/habitRepository.dart';
+import '../../models/dailyLog.dart';
+import '../../models/habit.dart';
+import '../../utils/databaseHelper.dart';
+
 class LogHabitScreen extends StatefulWidget {
   const LogHabitScreen({super.key});
 
@@ -11,35 +16,63 @@ class _LogHabitScreenState extends State<LogHabitScreen> {
   static const Color _primaryGreen = Color(0xFF20C997);
   static const Color _background = Color(0xFFF5F7FA);
 
-  final List<HabitItem> _habits = <HabitItem>[
-    HabitItem(
-      title: 'Coffee Avoided',
-      subtitle: 'No Coffee Today',
-      streakDays: 3,
-      asset: 'assets/images/coffee.png',
-    ),
-    HabitItem(
-      title: 'Daily Savings Log',
-      subtitle: 'Saved RM5 Today',
-      streakDays: 5,
-      asset: 'assets/images/pigBank.png',
-    ),
-    HabitItem(
-      title: 'Impulse Buy Avoided',
-      subtitle: 'Avoided Impulse Buy',
-      streakDays: 7,
-      asset: 'assets/images/onlineShopping.png',
-    ),
-    HabitItem(
-      title: 'Home Cooked Meal',
-      subtitle: 'Avoided Dining Out',
-      streakDays: 2,
-      asset: 'assets/images/homeCookMeal.png',
-    ),
-  ];
+  late HabitRepository _habitRepository;
+  late DatabaseHelper _database;
+  late Future<List<Habit>> _habitsFuture;
 
   int? _selectedIndex;
-  bool _isHabitLogged = false;
+  // Track which habit IDs have been logged today
+  final Set<String> _loggedHabitIds = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    _habitRepository = HabitRepository();
+    _database = DatabaseHelper();
+    _habitsFuture = _loadHabits();
+  }
+
+  Future<List<Habit>> _loadHabits() async {
+    final habits = await _habitRepository.getAllHabits();
+
+    // Load today's logged habits
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+
+    for (final habit in habits) {
+      final logs = await _database.getDailyLogs(habit.id);
+      for (final log in logs) {
+        final logDate = DateTime.parse(log['date'] as String);
+        final logDateOnly = DateTime(logDate.year, logDate.month, logDate.day);
+        if (logDateOnly == todayStart) {
+          _loggedHabitIds.add(habit.id);
+          break;
+        }
+      }
+    }
+
+    return habits;
+  }
+
+  void _logHabit(Habit habit) {
+    // Insert daily log entry
+    final dailyLog = DailyLog(habitId: habit.id, date: DateTime.now());
+    _database.insertDailyLog(dailyLog.toMap());
+
+    setState(() {
+      _loggedHabitIds.add(habit.id);
+      _selectedIndex = null;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('✓ Logged: ${habit.name}'),
+        backgroundColor: _primaryGreen,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,10 +81,6 @@ class _LogHabitScreenState extends State<LogHabitScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
         centerTitle: true,
         title: const Text(
           'Log Habit',
@@ -62,98 +91,108 @@ class _LogHabitScreenState extends State<LogHabitScreen> {
           ),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'What did you do today?',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+      body: FutureBuilder<List<Habit>>(
+        future: _habitsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Error loading habits'),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _habitsFuture = _loadHabits();
+                      });
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              ...List.generate(_habits.length, (i) {
-                final item = _habits[i];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: HabitCard(
-                    item: item,
-                    isSelected: _selectedIndex == i,
-                    isLogged: _isHabitLogged && _selectedIndex == i,
-                    onTap: () => setState(() => _selectedIndex = i),
-                    accentColor: _primaryGreen,
-                  ),
-                );
-              }),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryGreen,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: _selectedIndex == null
-                      ? null
-                      : () {
-                          final selected = _habits[_selectedIndex!];
-                          setState(() {
-                            _isHabitLogged = true;
-                            _selectedIndex = null;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('✓ Logged: ${selected.title}'),
-                              backgroundColor: _primaryGreen,
-                              duration: const Duration(seconds: 2),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                  icon: const Icon(Icons.check_circle_outline, size: 20),
-                  label: const Text(
-                    'Log Habit',
+            );
+          }
+
+          final habits = snapshot.data ?? [];
+          if (habits.isEmpty) {
+            return const Center(
+              child: Text('No habits found. Create one in Settings.'),
+            );
+          }
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What did you do today?',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
+                      color: Colors.black87,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  ...List.generate(habits.length, (i) {
+                    final habit = habits[i];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: HabitCard(
+                        habit: habit,
+                        isSelected: _selectedIndex == i,
+                        isLogged: _loggedHabitIds.contains(habit.id),
+                        onTap: () => setState(() => _selectedIndex = i),
+                        accentColor: _primaryGreen,
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primaryGreen,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _selectedIndex == null
+                          ? null
+                          : () {
+                              final habit = habits[_selectedIndex!];
+                              _logHabit(habit);
+                            },
+                      icon: const Icon(Icons.check_circle_outline, size: 20),
+                      label: const Text(
+                        'Log Habit',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-class HabitItem {
-  final String title;
-  final String subtitle;
-  final int streakDays;
-  final String asset;
-
-  const HabitItem({
-    required this.title,
-    required this.subtitle,
-    required this.streakDays,
-    required this.asset,
-  });
-}
-
 class HabitCard extends StatefulWidget {
-  final HabitItem item;
+  final Habit habit;
   final bool isSelected;
   final bool? isLogged;
   final VoidCallback onTap;
@@ -161,7 +200,7 @@ class HabitCard extends StatefulWidget {
 
   const HabitCard({
     super.key,
-    required this.item,
+    required this.habit,
     required this.isSelected,
     this.isLogged = false,
     required this.onTap,
@@ -180,8 +219,8 @@ class _HabitCardState extends State<HabitCard> {
     final borderColor = widget.isSelected
         ? widget.accentColor
         : (widget.isLogged ?? false)
-            ? widget.accentColor.withOpacity(0.5)
-            : const Color(0xFFE0E0E0);
+        ? widget.accentColor.withOpacity(0.5)
+        : const Color(0xFFE0E0E0);
 
     final backgroundColor = (widget.isLogged ?? false)
         ? widget.accentColor.withOpacity(0.05)
@@ -192,9 +231,12 @@ class _HabitCardState extends State<HabitCard> {
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        transform: _isHovered ? (Matrix4.identity()..scale(1.02)) : Matrix4.identity(),
         child: Material(
           color: Colors.transparent,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: (widget.isLogged ?? false) ? null : widget.onTap,
@@ -209,9 +251,9 @@ class _HabitCardState extends State<HabitCard> {
                 boxShadow: _isHovered
                     ? [
                         BoxShadow(
-                          color: widget.accentColor.withOpacity(0.15),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                          color: widget.accentColor.withOpacity(0.18),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
                         ),
                       ]
                     : [
@@ -226,6 +268,8 @@ class _HabitCardState extends State<HabitCard> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  _IconThumb(icon: widget.habit.icon.iconData),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +278,7 @@ class _HabitCardState extends State<HabitCard> {
                           children: [
                             Expanded(
                               child: Text(
-                                widget.item.title,
+                                widget.habit.name,
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
@@ -272,7 +316,7 @@ class _HabitCardState extends State<HabitCard> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          widget.item.subtitle,
+                          widget.habit.quickLogText,
                           style: TextStyle(
                             fontSize: 13,
                             color: (widget.isLogged ?? false)
@@ -290,7 +334,7 @@ class _HabitCardState extends State<HabitCard> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '${widget.item.streakDays} day streak',
+                              widget.habit.type.label,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.orange.shade600,
@@ -312,9 +356,9 @@ class _HabitCardState extends State<HabitCard> {
   }
 }
 
-class _ImageThumb extends StatelessWidget {
-  final String path;
-  const _ImageThumb({required this.path});
+class _IconThumb extends StatelessWidget {
+  final IconData icon;
+  const _IconThumb({required this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -324,18 +368,7 @@ class _ImageThumb extends StatelessWidget {
         width: 64,
         height: 64,
         color: Colors.grey.shade200,
-        child: Image.asset(
-          path,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Center(
-              child: Icon(
-                Icons.image_not_supported_outlined,
-                color: Colors.grey.shade500,
-              ),
-            );
-          },
-        ),
+        child: Icon(icon, size: 32, color: Colors.grey.shade600),
       ),
     );
   }
