@@ -36,5 +36,4 @@ class HabitRepository {
   Future<void> deleteHabit(String id) async {
     await _dbHelper.deleteHabit(id);
   }
-
 }

@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'analysis.dart';
 import 'home.dart';
 import 'settings/habit_form.dart';
-import 'settings/habit_list.dart';
+import 'settings/habit_list.dart'; // This is your SettingsScreen
+import 'add_record_screen.dart'; // The entry point for logging
 
 class AppScreens extends StatefulWidget {
   const AppScreens({super.key});
@@ -16,8 +17,10 @@ class _AppScreensState extends State<AppScreens> {
   static const Color _primary = Color(0xFF20C997);
   int _currentIndex = 0;
 
+  // We use AddRecordScreen here so the user can choose a category first
   final List<Widget> _pages = const [
     HomeScreen(),
+    AddRecordScreen(), 
     AnalysisScreen(),
     SettingsScreen(),
   ];
@@ -26,7 +29,9 @@ class _AppScreensState extends State<AppScreens> {
     setState(() => _currentIndex = index);
   }
 
+  /// This is the Floating "+" button logic
   Future<void> _onAddTap() async {
+    // Navigates directly to the creation form
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const HabitFormScreen()),
     );
@@ -45,10 +50,11 @@ class _AppScreensState extends State<AppScreens> {
   }
 
   Widget _buildBottomNavigationBar() {
-    final bool isHome = _currentIndex == 0;
-    final bool isAnalysis = _currentIndex == 1;
-    final bool isSettings = _currentIndex == 2;
-
+    // Index 0: Home
+    // Index 1: Log (AddRecordScreen)
+    // Index 2: Analysis
+    // Index 3: Settings
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -68,26 +74,32 @@ class _AppScreensState extends State<AppScreens> {
               _buildNavItem(
                 Icons.home_outlined,
                 'Home',
-                isHome,
+                _currentIndex == 0,
                 () => _onTabSelected(0),
               ),
               _buildNavItem(
-                Icons.add_circle_outline,
-                'Add',
+                Icons.playlist_add_check_outlined, // Changed icon to represent "Logging"
+                'Log',
+                _currentIndex == 1,
+                () => _onTabSelected(1),
+              ),
+              _buildNavItem(
+                Icons.add_circle, // The "Quick Create" button
+                'Create',
                 false,
                 _onAddTap,
               ),
               _buildNavItem(
                 Icons.bar_chart,
                 'Analysis',
-                isAnalysis,
-                () => _onTabSelected(1),
+                _currentIndex == 2,
+                () => _onTabSelected(2),
               ),
               _buildNavItem(
                 Icons.settings_outlined,
                 'Settings',
-                isSettings,
-                () => _onTabSelected(2),
+                _currentIndex == 3,
+                () => _onTabSelected(3),
               ),
             ],
           ),
@@ -106,11 +118,8 @@ class _AppScreensState extends State<AppScreens> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          mouseCursor: SystemMouseCursors.click,
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,
-          hoverColor: _primary.withOpacity(0.08),
-          splashColor: _primary.withOpacity(0.12),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Column(
@@ -125,7 +134,7 @@ class _AppScreensState extends State<AppScreens> {
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11, // Slightly smaller to fit 5 items
                     color: isActive ? _primary : Colors.grey,
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                   ),

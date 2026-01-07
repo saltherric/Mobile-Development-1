@@ -182,6 +182,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ...habits.map(
                     (habit) => HabitCard(
                   habit: habit,
+                  isSelected: false, // Always false in Settings mode
+                  onTap: () {},
                   onEdit: () => _navigateToEditHabit(habit),
                   onDelete: () => _delete(context, habit),
                 ),
