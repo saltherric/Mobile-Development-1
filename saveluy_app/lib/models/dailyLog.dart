@@ -1,35 +1,42 @@
+import 'package:uuid/uuid.dart';
+
+const uuid = Uuid();
+
 class DailyLog {
   final String id;
-  final String habitId;        // Which habit was logged
-  final DateTime date;         // When it happened
-  final String? notes;         // Optional user notes
-  final double? amount;        // Optional money amount (for savings)
-  
+  final String habitId;   // Link to the Habit being logged
+  final DateTime date;    // The date/time the habit was performed
+  final String? notes;    // Optional notes
+  final double? amount;   // For financial habits (e.g., "Saved RM5")
+
   DailyLog({
-    required this.id,
+    String? id,
     required this.habitId,
     required this.date,
     this.notes,
     this.amount,
-  });
+  }) : id = id ?? uuid.v4();
 
-  Map<String, dynamic> toJson() {
+  // Convert to Map for SQLite
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
       'habitId': habitId,
-      'date': date.toIso8601String(),
+      // Store only the date part (YYYY-MM-DD) if you only care about daily logs
+      'date': date.toIso8601String(), 
       'notes': notes,
       'amount': amount,
     };
   }
 
-  factory DailyLog.fromJson(Map<String, dynamic> json) {
+  // Create from SQLite Map
+  factory DailyLog.fromMap(Map<String, dynamic> map) {
     return DailyLog(
-      id: json['id'],
-      habitId: json['habitId'],
-      date: DateTime.parse(json['date']),
-      notes: json['notes'],
-      amount: json['amount']?.toDouble(),
+      id: map['id'],
+      habitId: map['habitId'],
+      date: DateTime.parse(map['date']),
+      notes: map['notes'],
+      amount: map['amount']?.toDouble(),
     );
   }
 }

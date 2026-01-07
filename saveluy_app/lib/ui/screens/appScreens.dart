@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'analysis.dart';
 import 'home.dart';
-import 'settings/addCategory.dart';
-import 'settings/settings.dart';
+import 'settings/habit_form.dart';
+import 'settings/habit_list.dart';
 
 class AppScreens extends StatefulWidget {
   const AppScreens({super.key});
@@ -28,7 +28,7 @@ class _AppScreensState extends State<AppScreens> {
 
   Future<void> _onAddTap() async {
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const AddCategoryScreen()),
+      MaterialPageRoute(builder: (_) => const HabitFormScreen()),
     );
   }
 
