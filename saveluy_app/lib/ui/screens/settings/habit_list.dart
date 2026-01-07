@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/habit.dart';
-import '../../../data/habit_repository.dart';
+import '../../../data/repositories/habitRepository.dart';
 import '../../widgets/habit_card.dart';
 import 'habit_form.dart';
 

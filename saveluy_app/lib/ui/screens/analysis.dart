@@ -1,11 +1,43 @@
 import 'package:flutter/material.dart';
 
-class AnalysisScreen extends StatelessWidget {
+import '../../data/repositories/analysisRepository.dart';
+import '../../data/mockData.dart';
+import '../../models/analysisData.dart';
+
+class AnalysisScreen extends StatefulWidget {
 	const AnalysisScreen({super.key});
 
+	@override
+	State<AnalysisScreen> createState() => _AnalysisScreenState();
+}
+
+class _AnalysisScreenState extends State<AnalysisScreen> {
 	static const Color _background = Color(0xFFF5F7FA);
-	static const Color _primary = Color(0xFF20C997);
 	static const Color _warning = Color(0xFFFFA726);
+
+	late AnalysisDataRepository _analysisDataRepository;
+	late Future<AnalysisData?> _analysisDataFuture;
+
+	@override
+	void initState() {
+		super.initState();
+		_analysisDataRepository = AnalysisDataRepository();
+		_analysisDataFuture = _loadAnalysisData();
+	}
+
+	Future<AnalysisData?> _loadAnalysisData() async {
+		final analysisData = await _analysisDataRepository.getAnalysisData('analysis_data_default');
+		if (analysisData == null) {
+			// If no data exists, create default data and save it
+			final defaultData = _analysisDataRepository.createNewAnalysisData(
+				streaks: MockData.getDefaultStreaks(),
+				categories: MockData.getDefaultCategories(),
+			);
+			await _analysisDataRepository.saveAnalysisData(defaultData);
+			return defaultData;
+		}
+		return analysisData;
+	}
 
 	@override
 	Widget build(BuildContext context) {
@@ -30,148 +62,110 @@ class AnalysisScreen extends StatelessWidget {
 					),
 				),
 			),
-			body: SingleChildScrollView(
-				padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-				child: Column(
-					crossAxisAlignment: CrossAxisAlignment.start,
-					children: [
-						Row(
-							mainAxisAlignment: MainAxisAlignment.spaceBetween,
+			body: FutureBuilder<AnalysisData?>(
+				future: _analysisDataFuture,
+				builder: (context, snapshot) {
+					if (snapshot.connectionState == ConnectionState.waiting) {
+						return const Center(child: CircularProgressIndicator());
+					}
+
+					if (snapshot.hasError) {
+						return Center(
+							child: Column(
+								mainAxisAlignment: MainAxisAlignment.center,
+								children: [
+									const Text('Error loading analysis data'),
+									ElevatedButton(
+										onPressed: () {
+											setState(() {
+												_analysisDataFuture = _loadAnalysisData();
+											});
+										},
+										child: const Text('Retry'),
+									),
+								],
+							),
+						);
+					}
+
+					final analysisData = snapshot.data;
+					if (analysisData == null) {
+						return const Center(child: Text('No data available'));
+					}
+
+					return SingleChildScrollView(
+						padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+						child: Column(
+							crossAxisAlignment: CrossAxisAlignment.start,
 							children: [
+								Row(
+									mainAxisAlignment: MainAxisAlignment.spaceBetween,
+									children: [
+										const Text(
+											'Your Progress',
+											style: TextStyle(
+												fontSize: 18,
+												fontWeight: FontWeight.w700,
+											),
+										),
+										Container(
+											padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+											decoration: BoxDecoration(
+												color: Colors.grey.shade200,
+												borderRadius: BorderRadius.circular(18),
+											),
+											child: const Text(
+												'This Week',
+												style: TextStyle(
+													fontSize: 13,
+													fontWeight: FontWeight.w600,
+													color: Colors.black87,
+												),
+											),
+										),
+									],
+								),
+								const SizedBox(height: 20),
 								const Text(
-									'Your Progress',
+									'YOUR STREAKS',
 									style: TextStyle(
-										fontSize: 18,
-										fontWeight: FontWeight.w700,
+										fontSize: 12,
+										fontWeight: FontWeight.w600,
+										letterSpacing: 0.4,
+										color: Color(0xFF9E9E9E),
 									),
 								),
-								Container(
-									padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-									decoration: BoxDecoration(
-										color: Colors.grey.shade200,
-										borderRadius: BorderRadius.circular(18),
+								const SizedBox(height: 12),
+								...analysisData.streaks.map(
+									(item) => Padding(
+										padding: const EdgeInsets.only(bottom: 12),
+										child: _StreakTile(item: item, highlightColor: _warning),
 									),
-									child: const Text(
-										'This Week',
-										style: TextStyle(
-											fontSize: 13,
-											fontWeight: FontWeight.w600,
-											color: Colors.black87,
-										),
+								),
+								const SizedBox(height: 12),
+								const Text(
+									'CATEGORY ACTIVITY',
+									style: TextStyle(
+										fontSize: 12,
+										fontWeight: FontWeight.w600,
+										letterSpacing: 0.4,
+										color: Color(0xFF9E9E9E),
+									),
+								),
+								const SizedBox(height: 12),
+								...analysisData.categories.map(
+									(item) => Padding(
+										padding: const EdgeInsets.only(bottom: 12),
+										child: _CategoryCard(item: item),
 									),
 								),
 							],
 						),
-						const SizedBox(height: 20),
-						const Text(
-							'YOUR STREAKS',
-							style: TextStyle(
-								fontSize: 12,
-								fontWeight: FontWeight.w600,
-								letterSpacing: 0.4,
-								color: Color(0xFF9E9E9E),
-							),
-						),
-						const SizedBox(height: 12),
-						..._streaks.map(
-							(item) => Padding(
-								padding: const EdgeInsets.only(bottom: 12),
-								child: _StreakTile(item: item, highlightColor: _warning),
-							),
-						),
-						const SizedBox(height: 12),
-						const Text(
-							'CATEGORY ACTIVITY',
-							style: TextStyle(
-								fontSize: 12,
-								fontWeight: FontWeight.w600,
-								letterSpacing: 0.4,
-								color: Color(0xFF9E9E9E),
-							),
-						),
-						const SizedBox(height: 12),
-						..._categories.map(
-							(item) => Padding(
-								padding: const EdgeInsets.only(bottom: 12),
-								child: _CategoryCard(item: item),
-							),
-						),
-					],
-				),
+					);
+				},
 			),
 		);
 	}
-
-	static const List<_StreakItem> _streaks = [
-		_StreakItem(
-			imagePath: 'assets/images/coffee.png',
-			title: 'Coffee Purchased Avoided',
-			subtitle: 'No Coffee Today',
-			streakCount: 3,
-			category: 'Food & Drink',
-		),
-		_StreakItem(
-			imagePath: 'assets/images/homeCookMeal.png',
-			title: 'Home Cooked Meal',
-			subtitle: 'Avoided Dining Out',
-			streakCount: 4,
-			category: 'Food & Drink',
-		),
-		_StreakItem(
-			imagePath: 'assets/images/pigBank.png',
-			title: 'Daily Savings Log',
-			subtitle: 'Saved RM5 Today',
-			streakCount: 5,
-			category: 'Daily Savings',
-		),
-		_StreakItem(
-			imagePath: 'assets/images/onlineShopping.png',
-			title: 'Online Shopping Avoided',
-			subtitle: 'Avoided Impulse Buy',
-			streakCount: 7,
-			category: 'Impulse Buying',
-		),
-		_StreakItem(
-			imagePath: 'assets/images/snacks.png',
-			title: 'Avoided Buying Snacks',
-			subtitle: 'Saved on Junk Food',
-			streakCount: 2,
-			category: 'Food & Drink',
-		),
-	];
-
-	static const List<_CategoryItem> _categories = [
-		_CategoryItem(
-			imagePath: 'assets/images/categories/foodNdrink.png',
-			iconColor: Color(0xFFF44336),
-			label: 'Food & Drink',
-			status: 'High Activity',
-			statusColor: Color(0xFFF44336),
-			filledDots: 4,
-			progress: 0.9,
-			accentColor: Color(0xFFE53935),
-		),
-		_CategoryItem(
-			imagePath: 'assets/images/categories/A_piggy_bank.png',
-			iconColor: Color(0xFF20C997),
-			label: 'Daily Savings',
-			status: 'High Activity',
-			statusColor: Color(0xFF20C997),
-			filledDots: 5,
-			progress: 1,
-			accentColor: Color(0xFF20C997),
-		),
-		_CategoryItem(
-			imagePath: 'assets/images/onlineShopping.png',
-			iconColor: Color(0xFFFFB300),
-			label: 'Impulse Buying',
-			status: 'Controlled',
-			statusColor: Color(0xFFFFB300),
-			filledDots: 2,
-			progress: 0.35,
-			accentColor: Color(0xFFFFB300),
-		),
-	];
 }
 
 class _StreakItem {
@@ -218,7 +212,7 @@ class _StreakTile extends StatelessWidget {
 		required this.highlightColor,
 	});
 
-	final _StreakItem item;
+	final StreakItem item;
 	final Color highlightColor;
 
 	@override
@@ -332,7 +326,15 @@ class _StreakTile extends StatelessWidget {
 class _CategoryCard extends StatelessWidget {
 	const _CategoryCard({required this.item});
 
-	final _CategoryItem item;
+	final CategoryItem item;
+
+	Color _hexToColor(String hexString) {
+		hexString = hexString.replaceAll('#', '');
+		if (hexString.length == 6) {
+			hexString = 'FF$hexString';
+		}
+		return Color(int.parse(hexString, radix: 16));
+	}
 
 	@override
 	Widget build(BuildContext context) {
@@ -358,7 +360,7 @@ class _CategoryCard extends StatelessWidget {
 								width: 44,
 								height: 44,
 								decoration: BoxDecoration(
-									color: item.iconColor.withOpacity(0.12),
+									color: _hexToColor(item.iconColorHex).withOpacity(0.12),
 									borderRadius: BorderRadius.circular(12),
 								),
 								child: ClipRRect(
@@ -387,14 +389,14 @@ class _CategoryCard extends StatelessWidget {
 											style: TextStyle(
 												fontSize: 13,
 												fontWeight: FontWeight.w600,
-												color: item.statusColor,
+												color: _hexToColor(item.statusColorHex),
 											),
 										),
 									],
 								),
 							),
 							Row(
-								children: List.generate(5, (index) => _buildDot(index < item.filledDots, item.accentColor)),
+								children: List.generate(5, (index) => _buildDot(index < item.filledDots, _hexToColor(item.accentColorHex))),
 							),
 						],
 					),
@@ -405,7 +407,7 @@ class _CategoryCard extends StatelessWidget {
 							value: item.progress,
 							minHeight: 8,
 							backgroundColor: Colors.grey.shade200,
-							valueColor: AlwaysStoppedAnimation<Color>(item.accentColor),
+							valueColor: AlwaysStoppedAnimation<Color>(_hexToColor(item.accentColorHex)),
 						),
 					),
 				],

@@ -1,11 +1,46 @@
 import 'package:flutter/material.dart';
 
+import '../../data/repositories/homeRepository.dart';
+import '../../data/mockData.dart';
+import '../../models/homeData.dart';
 import 'analysis.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   static const Color _background = Color(0xFFF5F7FA);
   static const Color _primary = Color(0xFF20C997);
+  
+  late HomeDataRepository _homeDataRepository;
+  late Future<HomeData?> _homeDataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _homeDataRepository = HomeDataRepository();
+    _homeDataFuture = _loadHomeData();
+  }
+
+  Future<HomeData?> _loadHomeData() async {
+    final homeData = await _homeDataRepository.getHomeData('home_data_default');
+    if (homeData == null) {
+      // If no data exists, create default data and save it
+      final params = MockData.getDefaultHomeDataParams();
+      final defaultData = _homeDataRepository.createNewHomeData(
+        overallScore: params['overallScore'],
+        overallMessage: params['overallMessage'],
+        categoryActivities: MockData.getDefaultCategoryActivities(),
+      );
+      await _homeDataRepository.saveHomeData(defaultData);
+      return defaultData;
+    }
+    return homeData;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,35 +69,68 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Overall Score Card
-            _buildOverAllCard(),
-            const SizedBox(height: 16),
+      body: FutureBuilder<HomeData?>(
+        future: _homeDataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Error loading home data'),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _homeDataFuture = _loadHomeData();
+                      });
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
 
-            // Category Activity Card
-            _buildCategoryActivityCard(),
-            const SizedBox(height: 16),
+          final homeData = snapshot.data;
+          if (homeData == null) {
+            return const Center(child: Text('No data available'));
+          }
 
-            // Action Cards Row
-            Row(
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _buildAddRecordCard(context)),
-                const SizedBox(width: 16),
-                Expanded(child: _buildHabitAnalysisCard(context)),
+                // Overall Score Card
+                _buildOverAllCard(homeData),
+                const SizedBox(height: 16),
+
+                // Category Activity Card
+                _buildCategoryActivityCard(homeData),
+                const SizedBox(height: 16),
+
+                // Action Cards Row
+                Row(
+                  children: [
+                    Expanded(child: _buildAddRecordCard(context)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildHabitAnalysisCard(context)),
+                  ],
+                ),
+                const SizedBox(height: 80), // Space reserved for the shared tab bar
               ],
             ),
-            const SizedBox(height: 80), // Space reserved for the shared tab bar
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildOverAllCard() {
+  Widget _buildOverAllCard(HomeData homeData) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -87,9 +155,9 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Great! Your habits are improving.',
-            style: TextStyle(
+          Text(
+            homeData.overallMessage,
+            style: const TextStyle(
               fontSize: 14,
               color: Colors.grey,
             ),
@@ -109,24 +177,24 @@ class HomeScreen extends StatelessWidget {
                       width: 100,
                       height: 100,
                       child: CircularProgressIndicator(
-                        value: 0.85,
+                        value: homeData.overallScore / 100,
                         strokeWidth: 8,
                         backgroundColor: Colors.grey[200],
                         valueColor: const AlwaysStoppedAnimation<Color>(_primary),
                       ),
                     ),
-                    const Column(
+                    Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '85',
-                          style: TextStyle(
+                          '${homeData.overallScore.toStringAsFixed(0)}',
+                          style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: _primary,
                           ),
                         ),
-                        Text(
+                        const Text(
                           '/ 100',
                           style: TextStyle(
                             fontSize: 14,
@@ -158,7 +226,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryActivityCard() {
+  Widget _buildCategoryActivityCard(HomeData homeData) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -173,37 +241,20 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        _buildCategoryCard(
-          imagePath: 'assets/images/categories/foodNdrink.png',
-          iconColor: const Color(0xFFF44336),
-          label: 'Food & Drink',
-          status: 'High Activity',
-          statusColor: const Color(0xFFF44336),
-          filledDots: 4,
-          progress: 0.9,
-          accentColor: const Color(0xFFE53935),
-        ),
-        const SizedBox(height: 12),
-        _buildCategoryCard(
-          imagePath: 'assets/images/categories/A_piggy_bank.png',
-          iconColor: _primary,
-          label: 'Daily Savings',
-          status: 'High Activity',
-          statusColor: _primary,
-          filledDots: 5,
-          progress: 1,
-          accentColor: _primary,
-        ),
-        const SizedBox(height: 12),
-        _buildCategoryCard(
-          imagePath: 'assets/images/onlineShopping.png',
-          iconColor: const Color(0xFFFFB300),
-          label: 'Impulse Buying',
-          status: 'Controlled',
-          statusColor: const Color(0xFFFFB300),
-          filledDots: 2,
-          progress: 0.35,
-          accentColor: const Color(0xFFFFB300),
+        ...homeData.categoryActivities.map(
+          (category) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildCategoryCard(
+              imagePath: category.imagePath,
+              iconColor: _hexToColor(category.accentColorHex),
+              label: category.label,
+              status: category.status,
+              statusColor: _hexToColor(category.accentColorHex),
+              filledDots: category.filledDots,
+              progress: category.progress,
+              accentColor: _hexToColor(category.accentColorHex),
+            ),
+          ),
         ),
       ],
     );
@@ -427,5 +478,14 @@ class HomeScreen extends StatelessWidget {
             )
           : null,
     );
+  }
+
+  /// Convert hex color string to Color
+  Color _hexToColor(String hexString) {
+    hexString = hexString.replaceAll('#', '');
+    if (hexString.length == 6) {
+      hexString = 'FF$hexString';
+    }
+    return Color(int.parse(hexString, radix: 16));
   }
 }

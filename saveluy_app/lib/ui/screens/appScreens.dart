@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'analysis.dart';
 import 'home.dart';
-import 'settings/habit_form.dart';
-import 'settings/habit_list.dart';
+import 'logHabit.dart';
+import 'settings/settingsMain.dart';
 
 class AppScreens extends StatefulWidget {
   const AppScreens({super.key});
@@ -19,7 +19,7 @@ class _AppScreensState extends State<AppScreens> {
   final List<Widget> _pages = const [
     HomeScreen(),
     AnalysisScreen(),
-    SettingsScreen(),
+    SettingsMainScreen(),
   ];
 
   void _onTabSelected(int index) {
@@ -28,7 +28,7 @@ class _AppScreensState extends State<AppScreens> {
 
   Future<void> _onAddTap() async {
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HabitFormScreen()),
+      MaterialPageRoute(builder: (_) => const LogHabitScreen()),
     );
   }
 

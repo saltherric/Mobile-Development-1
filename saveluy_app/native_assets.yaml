@@ -1,0 +1,5 @@
+# Disable native asset building for web
+# This prevents sqlite3 from trying to compile native code
+build:
+  hook:
+    enabled: false
